@@ -26,6 +26,59 @@ interface Stats {
   totalCategories: number;
 }
 
+// ── Skeletons ────────────────────────────────────────────────────────────────
+
+/**
+ * Skeleton placeholder that mirrors the StatCard layout.
+ */
+const StatCardSkeleton = () => (
+  <Card sx={{ height: '100%' }}>
+    <CardContent sx={{ p: 3 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          mb: 2,
+        }}
+      >
+        <Skeleton
+          variant='rounded'
+          width={45}
+          height={45}
+          sx={{ borderRadius: 2 }}
+        />
+        <Skeleton variant='text' width={60} height={28} />
+      </Box>
+      <Skeleton variant='text' width={90} height={48} sx={{ mb: 0.5 }} />
+      <Skeleton variant='text' width={110} height={24} />
+    </CardContent>
+  </Card>
+);
+
+/**
+ * Skeleton placeholder that mirrors the QuickActionCard layout.
+ */
+const QuickActionSkeleton = () => (
+  <Card sx={{ height: '100%' }}>
+    <CardContent
+      sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 1.5 }}
+    >
+      <Skeleton variant='text' width='45%' height={32} />
+      <Skeleton variant='text' width='100%' height={20} />
+      <Skeleton variant='text' width='92%' height={20} />
+      <Box sx={{ mt: 0.5 }}>
+        <Skeleton
+          variant='rounded'
+          width={115}
+          height={32}
+          sx={{ borderRadius: 1 }}
+        />
+      </Box>
+    </CardContent>
+  </Card>
+);
+
 // ── Sub-components ───────────────────────────────────────────────────────────
 
 interface StatCardProps {
@@ -36,9 +89,6 @@ interface StatCardProps {
   href: string;
 }
 
-/**
- * Individual stat card — memoised to avoid re-renders on parent state changes.
- */
 const StatCard = ({ label, value, icon, color, href }: StatCardProps) => (
   <Card sx={{ height: '100%' }}>
     <CardContent sx={{ p: 3 }}>
@@ -172,7 +222,7 @@ export default function DashboardPage() {
       {/* ── Page Header ─────────────────────────────────────────────────── */}
       <Box sx={{ mb: 4 }}>
         <Typography variant='h4' sx={{ mb: 0.5 }}>
-          Welcome back, {firstName} 👋
+          Welcome back, {firstName}!
         </Typography>
         <Typography variant='body1' sx={{ color: 'text.secondary' }}>
           Here&apos;s an overview of your admin panel.
@@ -182,33 +232,45 @@ export default function DashboardPage() {
       {/* ── Stats Row ───────────────────────────────────────────────────── */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid size={{ xs: 12, sm: 4 }}>
-          <StatCard
-            label='Total Users'
-            value={loading ? null : (stats?.totalUsers ?? 0)}
-            icon={<PeopleAltIcon />}
-            color='#2563eb'
-            href='/users'
-          />
+          {loading ? (
+            <StatCardSkeleton />
+          ) : (
+            <StatCard
+              label='Total Users'
+              value={stats?.totalUsers ?? 0}
+              icon={<PeopleAltIcon />}
+              color='#2563eb'
+              href='/users'
+            />
+          )}
         </Grid>
 
         <Grid size={{ xs: 12, sm: 4 }}>
-          <StatCard
-            label='Total Products'
-            value={loading ? null : (stats?.totalProducts ?? 0)}
-            icon={<InventoryIcon />}
-            color='#7c3aed'
-            href='/products'
-          />
+          {loading ? (
+            <StatCardSkeleton />
+          ) : (
+            <StatCard
+              label='Total Products'
+              value={stats?.totalProducts ?? 0}
+              icon={<InventoryIcon />}
+              color='#7c3aed'
+              href='/products'
+            />
+          )}
         </Grid>
 
         <Grid size={{ xs: 12, sm: 4 }}>
-          <StatCard
-            label='Product Categories'
-            value={loading ? null : (stats?.totalCategories ?? 0)}
-            icon={<TrendingUpIcon />}
-            color='#059669'
-            href='/products'
-          />
+          {loading ? (
+            <StatCardSkeleton />
+          ) : (
+            <StatCard
+              label='Product Categories'
+              value={stats?.totalCategories ?? 0}
+              icon={<TrendingUpIcon />}
+              color='#059669'
+              href='/products'
+            />
+          )}
         </Grid>
       </Grid>
 
@@ -219,23 +281,31 @@ export default function DashboardPage() {
 
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, sm: 6 }}>
-          <QuickActionCard
-            title='Manage Users'
-            description='Browse, search, and view detailed profiles of all registered users. Paginate through the full list or search by name.'
-            href='/users'
-            buttonLabel='Go to Users'
-            color='#2563eb'
-          />
+          {loading ? (
+            <QuickActionSkeleton />
+          ) : (
+            <QuickActionCard
+              title='Manage Users'
+              description='Browse, search, and view detailed profiles of all registered users. Paginate through the full list or search by name.'
+              href='/users'
+              buttonLabel='Go to Users'
+              color='#2563eb'
+            />
+          )}
         </Grid>
 
         <Grid size={{ xs: 12, sm: 6 }}>
-          <QuickActionCard
-            title='Browse Products'
-            description='Explore the full product catalogue. Filter by category, search by title, and view product specs, ratings, and reviews.'
-            href='/products'
-            buttonLabel='Go to Products'
-            color='#7c3aed'
-          />
+          {loading ? (
+            <QuickActionSkeleton />
+          ) : (
+            <QuickActionCard
+              title='Browse Products'
+              description='Explore the full product catalogue. Filter by category, search by title, and view product specs, ratings, and reviews.'
+              href='/products'
+              buttonLabel='Go to Products'
+              color='#7c3aed'
+            />
+          )}
         </Grid>
       </Grid>
     </Box>
