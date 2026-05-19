@@ -1,10 +1,16 @@
-export { default } from 'next-auth/middleware';
+import { withAuth } from 'next-auth/middleware';
 
 /**
  * Protect all routes under /dashboard, /users, /products.
- * Unauthenticated users are redirected to /login (configured in authOptions.pages).
- * The /login route and NextAuth API routes are intentionally excluded.
+ * withAuth is configured explicitly so the middleware knows to redirect
+ * to our custom /login page instead of NextAuth's default /api/auth/signin.
  */
+export default withAuth({
+  pages: {
+    signIn: '/login', // ← this is what was missing
+  },
+});
+
 export const config = {
   matcher: ['/dashboard/:path*', '/users/:path*', '/products/:path*'],
 };
