@@ -66,9 +66,11 @@ src/
 ├── theme/
 │   └── muiTheme.ts               # MUI custom theme
 │
-└── types/
-    ├── index.ts                  # Shared TypeScript types
-    └── next-auth.d.ts            # NextAuth session type augmentation
+├── types/
+│   ├── index.ts                  # Shared TypeScript types
+│   └── next-auth.d.ts            # NextAuth session type augmentation
+│
+└── middleware.ts                 # Route protection (redirects to /login if unauthenticated)
 ```
 
 ---
@@ -83,8 +85,8 @@ src/
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
-cd YOUR_REPO_NAME
+git clone https://github.com/abhijit69-ui/frontend-assessment-Venture-Builders.git
+cd frontend-assessment-Venture-Builders
 ```
 
 ### 2. Install dependencies
