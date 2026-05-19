@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { InputAdornment, TextField } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
@@ -27,18 +27,24 @@ const SearchBar = ({
   debounceMs = 400,
 }: SearchBarProps) => {
   const [inputValue, setInputValue] = useState(value);
+  // Tracks when the value change came from the parent, not the user
+  const isExternalUpdate = useRef(false);
 
-  // Keep local state in sync if parent resets the value (e.g. on category change)
+  // Sync from parent (e.g. on category change) — mark as external
   useEffect(() => {
-    setInputValue(value);
-  }, [value]);
+    if (value !== inputValue) {
+      isExternalUpdate.current = true;
+      setInputValue(value);
+    }
+  }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Debounce: propagate to parent only after user pauses typing
+  // Debounce — skip propagation if change was external
   useEffect(() => {
-    const timer = setTimeout(() => {
-      onChange(inputValue);
-    }, debounceMs);
-
+    if (isExternalUpdate.current) {
+      isExternalUpdate.current = false;
+      return; // ← don't call onChange, it's a parent-driven reset
+    }
+    const timer = setTimeout(() => onChange(inputValue), debounceMs);
     return () => clearTimeout(timer);
   }, [inputValue, debounceMs, onChange]);
 

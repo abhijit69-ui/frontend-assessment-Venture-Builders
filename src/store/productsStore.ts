@@ -54,10 +54,10 @@ const useProductsStore = create<ProductsState>((set, get) => ({
   setPage: (page) => set({ page }),
 
   // Reset page when search changes
-  setSearch: (search) => set({ search, page: 0, category: '' }),
+  setSearch: (search) => set({ search, page: 0 }),
 
   // Reset page and search when category changes
-  setCategory: (category) => set({ category, page: 0, search: '' }),
+  setCategory: (category) => set({ category, page: 0 }),
 
   fetchProducts: async () => {
     const { page, search, category, cache } = get();
@@ -82,7 +82,24 @@ const useProductsStore = create<ProductsState>((set, get) => ({
     try {
       let data: ProductsResponse;
 
-      if (search) {
+      if (search && category) {
+        /**
+         * DummyJSON has no combined search+category endpoint.
+         * Strategy: fetch all products in the category (max 999),
+         * then filter client-side by the search term.
+         * Category counts are small enough that this is fine.
+         */
+        const categoryData = await getProductsByCategory(category, 999, 0);
+        const filtered = categoryData.products.filter((p) =>
+          p.title.toLowerCase().includes(search.toLowerCase()),
+        );
+        data = {
+          products: filtered.slice(skip, skip + LIMIT),
+          total: filtered.length,
+          skip: 0,
+          limit: 999,
+        };
+      } else if (search) {
         data = await searchProducts(search, LIMIT, skip);
       } else if (category) {
         data = await getProductsByCategory(category, LIMIT, skip);
@@ -94,10 +111,7 @@ const useProductsStore = create<ProductsState>((set, get) => ({
         products: data.products,
         total: data.total,
         loading: false,
-        cache: {
-          ...state.cache,
-          [cacheKey]: { data, timestamp: Date.now() },
-        },
+        cache: { ...state.cache, [cacheKey]: { data, timestamp: Date.now() } },
       }));
     } catch {
       set({
