@@ -1,10 +1,9 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { InputAdornment, TextField } from '@mui/material';
+import { IconButton, InputAdornment, TextField } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
-import IconButton from '@mui/material/IconButton';
 
 interface SearchBarProps {
   placeholder?: string;
@@ -14,11 +13,22 @@ interface SearchBarProps {
 }
 
 /**
- * Debounced search input — waits for the user to stop typing before
- * calling onChange, preventing an API call on every keystroke.
+ * Debounced search input.
  *
- * Local state `inputValue` drives the visible text immediately.
- * The debounced effect fires `onChange` after `debounceMs` of silence.
+ * Core fix: `isUserTyping` ref gates whether the debounce effect fires onChange.
+ * It is only set to true when the USER explicitly types or clears the input.
+ *
+ * This prevents two silent bugs:
+ * 1. On mount: the debounce effect was firing onChange('') which triggered
+ *    router.replace('/users'), wiping the ?page=N URL restored from history.
+ * 2. On parent-driven value sync (initFromUrl, category change): the value
+ *    sync effect was also triggering onChange via the debounce chain,
+ *    causing duplicate API calls and URL overwrites.
+ *
+ * Rule: if the value change originated from the parent → isUserTyping = false
+ *       → debounce does NOT fire onChange.
+ *       If the value change came from the user → isUserTyping = true
+ *       → debounce fires onChange after debounceMs.
  */
 const SearchBar = ({
   placeholder = 'Search...',
@@ -27,28 +37,39 @@ const SearchBar = ({
   debounceMs = 400,
 }: SearchBarProps) => {
   const [inputValue, setInputValue] = useState(value);
-  // Tracks when the value change came from the parent, not the user
-  const isExternalUpdate = useRef(false);
+  const isUserTyping = useRef(false);
 
-  // Sync from parent (e.g. on category change) — mark as external
+  // ── Sync from parent ─────────────────────────────────────────────────────
+  // Triggered when the parent resets or updates the search value
+  // (e.g. initFromUrl on mount, category change clearing search).
+  // Marks the change as NOT from the user so the debounce below is skipped.
   useEffect(() => {
-    if (value !== inputValue) {
-      isExternalUpdate.current = true;
-      setInputValue(value);
-    }
-  }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
+    isUserTyping.current = false;
+    setInputValue(value);
+  }, [value]);
 
-  // Debounce — skip propagation if change was external
+  // ── Debounce ─────────────────────────────────────────────────────────────
+  // Only fires onChange when the user is actually typing.
+  // Parent-driven updates (isUserTyping = false) bail out immediately.
   useEffect(() => {
-    if (isExternalUpdate.current) {
-      isExternalUpdate.current = false;
-      return; // ← don't call onChange, it's a parent-driven reset
-    }
-    const timer = setTimeout(() => onChange(inputValue), debounceMs);
+    if (!isUserTyping.current) return;
+
+    const timer = setTimeout(() => {
+      onChange(inputValue);
+    }, debounceMs);
+
     return () => clearTimeout(timer);
   }, [inputValue, debounceMs, onChange]);
 
+  // ── Handlers ─────────────────────────────────────────────────────────────
+
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    isUserTyping.current = true; // user is typing → allow debounce to fire
+    setInputValue(e.target.value);
+  }, []);
+
   const handleClear = useCallback(() => {
+    isUserTyping.current = true; // user action → notify parent immediately
     setInputValue('');
     onChange('');
   }, [onChange]);
@@ -56,7 +77,7 @@ const SearchBar = ({
   return (
     <TextField
       value={inputValue}
-      onChange={(e) => setInputValue(e.target.value)}
+      onChange={handleChange}
       placeholder={placeholder}
       size='small'
       fullWidth
@@ -79,9 +100,7 @@ const SearchBar = ({
       sx={{
         backgroundColor: 'background.paper',
         borderRadius: 2,
-        '& .MuiOutlinedInput-root': {
-          borderRadius: 2,
-        },
+        '& .MuiOutlinedInput-root': { borderRadius: 2 },
       }}
     />
   );

@@ -2,7 +2,8 @@ import { create } from 'zustand';
 import { User, UsersResponse } from '@/types';
 import { getUsers, searchUsers } from '@/lib/usersApi';
 
-const LIMIT = 12;
+export const USERS_LIMIT = 12;
+const LIMIT = USERS_LIMIT;
 
 /**
  * Cache TTL: 5 minutes.
@@ -38,6 +39,8 @@ interface UsersState {
   setSearch: (search: string) => void;
   fetchUsers: () => Promise<void>;
   reset: () => void;
+
+  initFromUrl: (page: number, search: string) => void;
 }
 
 const useUsersStore = create<UsersState>((set, get) => ({
@@ -53,6 +56,13 @@ const useUsersStore = create<UsersState>((set, get) => ({
 
   // Reset page to 0 whenever search changes
   setSearch: (search) => set({ search, page: 0 }),
+
+  /**
+   * Atomically restore page + search from URL params.
+   * Unlike setSearch(), this does NOT reset page — it sets both together.
+   * Called on component mount to sync URL → Zustand without cascading resets.
+   */
+  initFromUrl: (page, search) => set({ page, search }),
 
   fetchUsers: async () => {
     const { page, search, cache } = get();

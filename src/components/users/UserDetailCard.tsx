@@ -1,11 +1,9 @@
 'use client';
 
 import { memo } from 'react';
-import NextLink from 'next/link';
 import {
   Avatar,
   Box,
-  Button,
   Card,
   CardContent,
   Chip,
@@ -13,7 +11,6 @@ import {
   Grid,
   Typography,
 } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
 import BusinessIcon from '@mui/icons-material/Business';
@@ -22,6 +19,7 @@ import SchoolIcon from '@mui/icons-material/School';
 import CakeIcon from '@mui/icons-material/Cake';
 import FingerprintIcon from '@mui/icons-material/Fingerprint';
 import type { User } from '@/types';
+import BackButton from '../common/BackButton';
 
 // ── Helper: labelled info row ─────────────────────────────────────────────────
 
@@ -82,14 +80,7 @@ const UserDetailCard = memo(({ user }: UserDetailCardProps) => {
   return (
     <Box>
       {/* Back link */}
-      <Button
-        component={NextLink}
-        href='/users'
-        startIcon={<ArrowBackIcon />}
-        sx={{ mb: 3, color: 'text.secondary', fontWeight: 500 }}
-      >
-        Back to Users
-      </Button>
+      <BackButton label='Back to Users' fallback='/users' />
 
       <Grid container spacing={3}>
         {/* ── Left column: avatar + summary ─────────────────────────────── */}

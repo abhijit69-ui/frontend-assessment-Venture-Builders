@@ -1,8 +1,6 @@
 import { notFound } from 'next/navigation';
-import NextLink from 'next/link';
 import {
   Box,
-  Button,
   Card,
   CardContent,
   Chip,
@@ -11,7 +9,6 @@ import {
   Rating,
   Typography,
 } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import AssignmentReturnIcon from '@mui/icons-material/AssignmentReturn';
@@ -20,6 +17,7 @@ import { getProductById } from '@/lib/productsApi';
 import ImageCarousel from '@/components/products/ImageCarousel';
 import type { Metadata } from 'next';
 import type { Review } from '@/types';
+import BackButton from '@/components/common/BackButton';
 
 // ── Dynamic metadata ──────────────────────────────────────────────────────────
 
@@ -132,14 +130,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
   return (
     <Box>
       {/* Back link */}
-      <Button
-        component={NextLink}
-        href='/products'
-        startIcon={<ArrowBackIcon />}
-        sx={{ mb: 3, color: 'text.secondary', fontWeight: 500 }}
-      >
-        Back to Products
-      </Button>
+      <BackButton label='Back to Products' fallback='/products' />
 
       <Grid container spacing={3}>
         {/* ── Left: Image carousel ──────────────────────────────────────── */}

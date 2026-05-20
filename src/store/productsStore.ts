@@ -6,8 +6,8 @@ import {
   getProductsByCategory,
   getCategories,
 } from '@/lib/productsApi';
-
-const LIMIT = 12; // 12 fits cleanly in a 3 or 4 col grid
+export const PRODUCTS_LIMIT = 12;
+const LIMIT = PRODUCTS_LIMIT; // 12 fits cleanly in a 3 or 4 col grid
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
@@ -38,6 +38,8 @@ interface ProductsState {
   fetchProducts: () => Promise<void>;
   fetchCategories: () => Promise<void>;
   reset: () => void;
+
+  initFromUrl: (page: number, search: string, category: string) => void;
 }
 
 const useProductsStore = create<ProductsState>((set, get) => ({
@@ -58,6 +60,12 @@ const useProductsStore = create<ProductsState>((set, get) => ({
 
   // Reset page and search when category changes
   setCategory: (category) => set({ category, page: 0 }),
+
+  /**
+   * Atomically restore page + search + category from URL params.
+   * Bypasses the cascading page resets in setSearch() / setCategory().
+   */
+  initFromUrl: (page, search, category) => set({ page, search, category }),
 
   fetchProducts: async () => {
     const { page, search, category, cache } = get();
